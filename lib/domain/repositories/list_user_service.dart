@@ -1,23 +1,23 @@
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter_crud_api/data/models/create_user_model.dart';
 import 'package:flutter_crud_api/data/models/single_user_model.dart';
-import 'package:http/http.dart';
-import 'package:http/http.dart' as http;
 import '../../data/models/list_user_model.dart';
 
 
 class ListUserService {
   static const String _url = "https://reqres.in/api/users";
+  final Dio _dio = Dio();
 
-  static Future<List<ListUserModel>> getListUser() async {
+  Future<List<ListUserModel>> getListUser() async {
     List<ListUserModel> listUser = [];
 
     try {
-      Response response = await http.get(Uri.parse('$_url?page=1'));
+      Response response = await _dio.get('$_url?page=1');
       switch (response.statusCode) {
         case 200:
-          final json = jsonDecode(response.body)['data'];
-          for (var value in json) {
+          final data = response.data['data'];
+          for (var value in data) {
             ListUserModel user = ListUserModel.fromJson(value);
             listUser.add(user);
           }
@@ -27,62 +27,74 @@ class ListUserService {
           throw Exception(
               'Error occured while Communication with Server with StatusCode : ${response.statusCode}');
       }
-    } catch (e) {
-      throw e.toString();
+    } on DioError catch (e){
+
+      throw Exception(e.toString());
+
+    }catch (e) {
+      throw Exception(e.toString());
     }
   }
 
-  static Future<CreateUserResponse> postNewUser(CreateUserRequest createUserRequest) async {
+  Future<CreateUserResponse> postNewUser(CreateUserRequest createUserRequest) async {
     try {
-      Response response = await http.post(Uri.parse('$_url'), body: {
+      Response response = await _dio.post(_url, data: {
         "name": createUserRequest.name,
         "job": createUserRequest.job,
       });
 
       switch (response.statusCode) {
         case 201:
-          final json = jsonDecode(response.body);
-          CreateUserResponse createUserResponse = CreateUserResponse.fromJson(json);
+          final data = response.data;
+          CreateUserResponse createUserResponse = CreateUserResponse.fromJson(data);
           return createUserResponse;
         default:
           throw Exception(
               'Error occured while Communication with Server with StatusCode : ${response.statusCode}');
       }
-    } catch (e) {
-      throw e.toString();
+    }on DioError catch (e){
+
+      throw Exception(e.toString());
+
+    }catch (e) {
+      throw Exception(e.toString());
     }
   }
   
-  static Future<SingleUserModel> getSingleUser(id) async{
+  Future<SingleUserModel> getSingleUser(id) async{
     try{
-      Response response = await http.get(Uri.parse('$_url/$id'));
+      Response response = await _dio.get('$_url/$id');
       switch (response.statusCode) {
         case 200:
-          final json = jsonDecode(response.body)['data'];
-          SingleUserModel singleUserModel = SingleUserModel.fromJson(json);
+          final data = response.data['data'];
+          SingleUserModel singleUserModel = SingleUserModel.fromJson(data);
           return singleUserModel;
 
         default:
           throw Exception(
               'Error occured while Communication with Server with StatusCode : ${response.statusCode}');
       }
+    }on DioError catch (e){
+
+      throw Exception(e.toString());
+
     }catch (e){
-      throw e.toString();
+      throw Exception(e.toString());
     }
     
   }
 
-  static Future<SingleUserResponse> updateSingleUser(SingleUserModel singleUserModel) async{
+  Future<SingleUserResponse> updateSingleUser(SingleUserModel singleUserModel) async{
     try{
-      Response response = await http.put(Uri.parse('$_url/${singleUserModel.id}/'), body: {
+      Response response = await _dio.put('$_url/${singleUserModel.id}/', data: {
         "name": singleUserModel.firstName,
         "job": singleUserModel.email,
       });
 
       switch (response.statusCode) {
         case 200:
-          final json = jsonDecode(response.body);
-          SingleUserResponse singleUserResponse = SingleUserResponse.fromJson(json);
+          final data = response.data;
+          SingleUserResponse singleUserResponse = SingleUserResponse.fromJson(data);
           return singleUserResponse;
 
         default:
@@ -90,14 +102,18 @@ class ListUserService {
               'Error occured while Communication with Server with StatusCode : ${response.statusCode}');
       }
 
+    }on DioError catch (e){
+
+      throw Exception(e.toString());
+
     }catch (e){
-      throw e.toString();
+      throw Exception(e.toString());
     }
   }
 
-  static Future<String> deleteSingleUser(int id) async{
+  Future<String> deleteSingleUser(int id) async{
     try{
-      Response response = await http.delete(Uri.parse('$_url/$id'));
+      Response response = await _dio.delete('$_url/$id');
       switch (response.statusCode) {
         case 204:
           String message = "This user data successfully deleted";
@@ -107,15 +123,16 @@ class ListUserService {
           throw Exception(
               'Error occured while Communication with Server with StatusCode : ${response.statusCode}');
       }
-    }catch (e){
-      throw e.toString();
-    }
+    }on DioError catch (e){
 
+      throw Exception(e.toString());
+
+    }catch (e){
+      throw Exception(e.toString());
+    }
 
   }
 
-
-
-
-
 }
+
+ListUserService listUserService = ListUserService();

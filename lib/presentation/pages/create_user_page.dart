@@ -5,8 +5,8 @@ import '../../domain/repositories/list_user_service.dart';
 class CreateUserPage extends StatelessWidget {
   CreateUserPage({Key? key}) : super(key: key);
 
-  TextEditingController nameController = TextEditingController();
-  TextEditingController jobController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController jobController = TextEditingController();
 
 
   @override
@@ -15,75 +15,73 @@ class CreateUserPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.indigo,
       ),
-      body: Container(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextFormField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  border: UnderlineInputBorder(),
-                  labelText: 'Name',
-                ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextFormField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                border: UnderlineInputBorder(),
+                labelText: 'Name',
               ),
             ),
+          ),
 
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextFormField(
-                controller: jobController,
-                decoration: const InputDecoration(
-                  border: UnderlineInputBorder(),
-                  labelText: 'Job',
-                ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextFormField(
+              controller: jobController,
+              decoration: const InputDecoration(
+                border: UnderlineInputBorder(),
+                labelText: 'Job',
               ),
             ),
+          ),
 
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    primary: Colors.indigo,
-                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-                    textStyle:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  primary: Colors.indigo,
+                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                  textStyle:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
 
-                onPressed: () async{
-                  CreateUserResponse createUserResponse = await ListUserService
-                      .postNewUser(
-                    CreateUserRequest(name: nameController.text, job: jobController.text)
-                  );
+              onPressed: () async{
+                CreateUserResponse createUserResponse = await listUserService
+                  .postNewUser(
+                  CreateUserRequest(name: nameController.text, job: jobController.text)
+                );
 
-                  showDialog(
-                    useSafeArea: true,
-                    context: context,
-                    builder: (BuildContext context) => AlertDialog(
-                      title: const Text('Add New User Success'),
-                      content: SizedBox(
-                        height: 100.0,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Name : ${createUserResponse.name}'),
-                            Text('Job : ${createUserResponse.job}'),
-                            Text('Create at : ${createUserResponse.createdAt}'),
-                            Text('ID : ${createUserResponse.id}'),
-                          ],
-                        ),
+                showDialog(
+                  useSafeArea: true,
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    title: const Text('Add New User Success'),
+                    content: SizedBox(
+                      height: 100.0,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Name : ${createUserResponse.name}'),
+                          Text('Job : ${createUserResponse.job}'),
+                          Text('Create at : ${createUserResponse.createdAt}'),
+                          Text('ID : ${createUserResponse.id}'),
+                        ],
                       ),
                     ),
-                  );
+                  ),
+                );
 
 
 
-                },
-                child: const Text('Add User'),
-              )
+              },
+              child: const Text('Add User'),
+            )
 
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

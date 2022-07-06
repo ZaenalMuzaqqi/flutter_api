@@ -37,14 +37,14 @@ class TileList extends StatelessWidget {
         child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: FutureBuilder<List<ListUserModel>>(
-              future: ListUserService.getListUser(),
+              future: listUserService.getListUser(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const [
-                      CircularProgressIndicator(color: Colors.indigo,),
+                      // CircularProgressIndicator(color: Colors.indigo,),
                       SizedBox(height: 40.0),
                       Text('Check your internet network'),
                     ],
