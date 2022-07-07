@@ -12,8 +12,9 @@ class ListUserCubit extends Cubit<ListUserState> {
   void fetchListUser() async{
     try{
       emit(ListUserLoading());
-      List<ListUserModel> listUserModel = await listUserService.getListUser();
-      emit(ListUserSuccess(listUserModel));
+      final listUserModel = await listUserService.getListUser();
+      listUserModel.fold((l) => emit(ListUserFailed(l)), (r) => emit(ListUserSuccess(r)));
+
     }catch (e){
       emit(ListUserFailed(e.toString()));
     }

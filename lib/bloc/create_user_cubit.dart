@@ -10,10 +10,15 @@ class CreateUserCubit extends Cubit<CreateUserState> {
   CreateUserCubit() : super(CreateUserInitial());
   
   void postNewUser(CreateUserRequest createUserRequest) async {
+    emit(CreateUserLoading());
     try{
-      emit(CreateUserLoading());
-      CreateUserResponse createUserResponse = await listUserService.postNewUser(createUserRequest);
-      emit(CreateUserSuccess(createUserResponse));
+
+      final createUserResponse = await listUserService.postNewUser(createUserRequest);
+      createUserResponse.fold(
+          (l) => emit(CreateUserFailed(l)),
+          (r) => emit(CreateUserSuccess(r))
+      );
+
     }catch (e){
       emit(CreateUserFailed(e.toString()));
     }

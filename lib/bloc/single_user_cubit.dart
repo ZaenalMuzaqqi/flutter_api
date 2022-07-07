@@ -12,8 +12,9 @@ class SingleUserCubit extends Cubit<SingleUserState> {
   void getSingleUser(id) async{
     try{
       emit(SingleUserLoading());
-      SingleUserModel singleUserModel = await listUserService.getSingleUser(id);
-      emit(SingleUserSuccess(singleUserModel));
+      final singleUserModel = await listUserService.getSingleUser(id);
+      singleUserModel.fold((l) => emit(SingleUserFailed(l)), (r) => emit(SingleUserSuccess(r)));
+
     }catch (e){
       emit(SingleUserFailed(e.toString()));
     }
@@ -22,8 +23,8 @@ class SingleUserCubit extends Cubit<SingleUserState> {
   void updateSingleUser(singleUserModel) async{
     try{
       emit(SingleUserLoading());
-      SingleUserResponse singleUserResponse = await listUserService.updateSingleUser(singleUserModel);
-      emit(SingleUserUpdate(singleUserResponse));
+      final singleUserResponse = await listUserService.updateSingleUser(singleUserModel);
+      singleUserResponse.fold((l) => null, (r) => emit(SingleUserUpdate(r)));
     }catch (e){
       emit(SingleUserFailed(e.toString()));
     }
@@ -32,8 +33,9 @@ class SingleUserCubit extends Cubit<SingleUserState> {
   void deleteSingleUser(id) async{
     try{
       emit(SingleUserLoading());
-      String deleteMessage = await listUserService.deleteSingleUser(id);
-      emit(SingleUserDeleted(deleteMessage));
+      final deleteMessage = await listUserService.deleteSingleUser(id);
+      deleteMessage.fold((l) => emit(SingleUserFailed(l)), (r) => emit(SingleUserDeleted(r)));
+
     }catch (e){
       emit(SingleUserFailed(e.toString()));
     }
