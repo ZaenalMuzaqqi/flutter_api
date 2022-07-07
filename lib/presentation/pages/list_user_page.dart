@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_crud_api/data/models/list_user_model.dart';
-import 'package:flutter_crud_api/presentation/pages/edit_user_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../bloc/list_user_cubit.dart';
+import '../../presentation/pages/edit_user_page.dart';
 
-import '../../domain/repositories/list_user_service.dart';
 import 'create_user_page.dart';
 
-class ListUserPage extends StatelessWidget {
+class ListUserPage extends StatefulWidget {
   const ListUserPage({Key? key}) : super(key: key);
+
+  @override
+  State<ListUserPage> createState() => _ListUserPageState();
+}
+
+class _ListUserPageState extends State<ListUserPage> {
+  @override
+  void initState() {
+    context.read<ListUserCubit>().fetchListUser();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +32,7 @@ class ListUserPage extends StatelessWidget {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) =>  CreateUserPage()),
+            MaterialPageRoute(builder: (context) => CreateUserPage()),
           );
         },
       ),
@@ -31,73 +42,77 @@ class ListUserPage extends StatelessWidget {
 
 class TileList extends StatelessWidget {
   const TileList({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-        child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: FutureBuilder<List<ListUserModel>>(
-              future: listUserService.getListUser(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
+    return BlocConsumer<ListUserCubit, ListUserState>(
+      listener: (context, state) {
+        if(state is ListUserFailed){
+          Center(
+            child: Text(state.errorMessage),
+          );
+        }
+      },
+      builder: (context, state) {
+        if(state is ListUserSuccess){
+          return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ListView.builder(
+                itemCount: state.listUserModel.length,
+                itemBuilder: (context, index) {
                   return Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      // CircularProgressIndicator(color: Colors.indigo,),
-                      SizedBox(height: 40.0),
-                      Text('Check your internet network'),
+                    children: [
+                      ListTile(
+                        contentPadding: const EdgeInsets.only(top: 8.0),
+                        leading: CircleAvatar(
+                          radius: 24.0,
+                          backgroundImage: NetworkImage(
+                              state.listUserModel[index].avatar!),
+                        ),
+                        title: Text(
+                          state.listUserModel[index].firstName!,
+                          style: const TextStyle(
+                              fontSize: 18.0,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.indigo
+                          ),
+                        ),
+                        trailing: const Icon(
+                          Icons.arrow_forward_ios, size: 16.0,),
+                        subtitle: Text(state.listUserModel[index].email!),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) =>
+                                EditUserPage(id: state.listUserModel[index].id,)),
+                          );
+                        },
+
+                      ),
+                      Divider(
+                        height: 1.0,
+                        thickness: 1.0,
+                        color: Colors.indigo.shade50,
+                      )
                     ],
                   );
-                }
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator(color: Colors.indigo,);
-                } else {
+                },
+              )
+          );
+        }
+        else if(state is ListUserFailed){
 
-                  List<ListUserModel>? listUser = snapshot.data;
 
-                  return ListView.builder(
-                    itemCount: listUser?.length,
-                    itemBuilder: (context, index) {
-                      return Column(
-                        children: [
-                          ListTile(
-                            contentPadding: const EdgeInsets.only(top: 8.0),
-                            leading: CircleAvatar(
-                              radius: 24.0,
-                              backgroundImage: NetworkImage(listUser![index].avatar!),
-                            ),
-                            title: Text(
-                                listUser[index].firstName!,
-                              style: const TextStyle(
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.indigo
-                              ),
-                            ),
-                            trailing: const Icon(Icons.arrow_forward_ios, size: 16.0,),
-                            subtitle: Text(listUser[index].email!),
-                            onTap: (){
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) =>  EditUserPage(id: listUser[index].id,)),
-                              );
+        }
 
-                            },
 
-                          ),
-                          Divider(
-                            height: 1.0,
-                            thickness: 1.0,
-                            color: Colors.indigo.shade50,
-                          )
-                        ],
-                      );
-                    },
-                  );
-                }
-              },
-            )));
+
+        return const Center(
+
+        );
+
+      },
+    );
   }
 }
 

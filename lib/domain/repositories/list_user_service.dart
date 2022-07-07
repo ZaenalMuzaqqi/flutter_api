@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:flutter_crud_api/data/models/create_user_model.dart';
-import 'package:flutter_crud_api/data/models/single_user_model.dart';
+import '../../data/models/create_user_model.dart';
+import '../../data/models/single_user_model.dart';
 import '../../data/models/list_user_model.dart';
 
 
