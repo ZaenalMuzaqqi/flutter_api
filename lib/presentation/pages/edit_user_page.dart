@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/single_user_cubit.dart';
+import '../../bloc/single_user/single_user_bloc.dart';
 import '../../data/models/single_user_model.dart';
 
 class EditUserPage extends StatefulWidget {
@@ -12,17 +12,17 @@ class EditUserPage extends StatefulWidget {
 }
 
 class _EditUserPageState extends State<EditUserPage> {
-
-  late TextEditingController nameController, jobController, avatarController;
-
+  late TextEditingController nameController = TextEditingController(text: '');
+  late TextEditingController jobController = TextEditingController(text: '');
+  late TextEditingController avatarController = TextEditingController(text: '');
 
   @override
   void initState() {
-    context.read<SingleUserCubit>().getSingleUser(widget.id);
+    context
+        .read<SingleUserBloc>()
+        .add(SingleUserEvent.getSingleUser(widget.id));
     super.initState();
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -31,66 +31,72 @@ class _EditUserPageState extends State<EditUserPage> {
         backgroundColor: Colors.indigo,
       ),
       body: Column(
-        children: [
-          form(),
-          buttonUpdate(),
-          buttonDelete()
-        ],
+        children: [form(), buttonUpdate(), buttonDelete()],
       ),
     );
   }
 
   Widget form() {
-    return BlocConsumer<SingleUserCubit, SingleUserState>(
+    return BlocConsumer<SingleUserBloc, SingleUserState>(
       listener: (context, state) {
-        if(state is SingleUserUpdate){
-          showDialog(
-            useSafeArea: true,
-            context: context,
-            builder: (BuildContext context) =>
-                AlertDialog(
+        state.maybeWhen(
+            orElse: () {},
+            isSuccess: (SingleUserModel? singleUserModel) {
+              nameController =
+                  TextEditingController(text: singleUserModel?.firstName);
+              jobController =
+                  TextEditingController(text: singleUserModel?.email);
+              avatarController =
+                  TextEditingController(text: singleUserModel?.avatar);
+            },
+            isUpdated: (SingleUserResponse? singleUserResponse) {
+              showDialog(
+                useSafeArea: true,
+                context: context,
+                builder: (BuildContext context) => AlertDialog(
                   title: const Text('Update User Success'),
                   content: SizedBox(
                     height: 100.0,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Name : ${state.singleUserResponse.name}'),
-                        Text('Job : ${state.singleUserResponse.job}'),
-                        Text('Create at :${state.singleUserResponse.updatedAt}'),
+                        Text('Name : ${singleUserResponse?.name}'),
+                        Text('Job : ${singleUserResponse?.job}'),
+                        Text('Create at :${singleUserResponse?.updatedAt}'),
                       ],
                     ),
                   ),
                 ),
-          );
-        }
-        else if(state is SingleUserDeleted){
-          showDialog(
-            useSafeArea: true,
-            context: context,
-            builder: (BuildContext context) =>
-                AlertDialog(
+              );
+            },
+            isDeleted: (String? errorMessage) {
+              showDialog(
+                useSafeArea: true,
+                context: context,
+                builder: (BuildContext context) => AlertDialog(
                   title: const Text('Delete User Success'),
                   content: SizedBox(
                     height: 100.0,
                     child: Center(
-                      child: Text(state.deleteMessage),
+                      child: Text(errorMessage!),
                     ),
                   ),
                 ),
-          );
-        }
+              );
+            });
       },
       builder: (context, state) {
-        if(state is SingleUserLoading){
-          return const Center(child: CircularProgressIndicator(color: Colors.indigo,));
-        }else if(state is SingleUserFailed){
-          return Text(state.errorMessage);
-        }else if(state is SingleUserSuccess){
-          nameController = TextEditingController(text: state.singleUserModel.firstName);
-          jobController = TextEditingController(text: state.singleUserModel.email);
-          avatarController = TextEditingController(text: state.singleUserModel.avatar);
-        }
+        state.maybeMap(
+            orElse: () {},
+            isLoading: (e) {
+              return const Center(
+                child: CircularProgressIndicator(color: Colors.indigo),
+              );
+            },
+            isFailed: (e) {
+              return Text(e.errorMessage.toString());
+            });
+
         return Column(
           children: [
             Padding(
@@ -103,7 +109,6 @@ class _EditUserPageState extends State<EditUserPage> {
                 ),
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: TextFormField(
@@ -114,7 +119,6 @@ class _EditUserPageState extends State<EditUserPage> {
                 ),
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: TextFormField(
@@ -127,7 +131,6 @@ class _EditUserPageState extends State<EditUserPage> {
             ),
           ],
         );
-
       },
     );
   }
@@ -140,25 +143,21 @@ class _EditUserPageState extends State<EditUserPage> {
               primary: Colors.indigo,
               padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
               textStyle:
-              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           onPressed: () async {
-
             SingleUserModel singleUserModel = SingleUserModel(
                 id: widget.id,
                 email: jobController.text,
                 firstName: nameController.text,
                 lastName: nameController.text,
-                avatar: avatarController.text
-            );
+                avatar: avatarController.text);
 
-            context.read<SingleUserCubit>().updateSingleUser(singleUserModel);
-
+            context
+                .read<SingleUserBloc>()
+                .add(SingleUserEvent.updateSingleUser(singleUserModel));
           },
           child: const Text('Update User'),
-        )
-
-    );
+        ));
   }
 
   Widget buttonDelete() {
@@ -169,14 +168,13 @@ class _EditUserPageState extends State<EditUserPage> {
               primary: Colors.redAccent,
               padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
               textStyle:
-              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           onPressed: () async {
-            context.read<SingleUserCubit>().deleteSingleUser(widget.id);
+            context
+                .read<SingleUserBloc>()
+                .add(SingleUserEvent.deleteSingleUser(widget.id));
           },
           child: const Text('Delete User'),
-        )
-
-    );
+        ));
   }
 }

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/create_user_cubit.dart';
-import '../bloc/list_user_cubit.dart';
+import '../../bloc/create_user/create_user_bloc.dart';
+import '../../bloc/list_user/list_user_bloc.dart';
+import '../../bloc/single_user/single_user_bloc.dart';
 import '../presentation/pages/list_user_page.dart';
-
-import '../bloc/single_user_cubit.dart';
 
 class AppWidget extends StatelessWidget {
   const AppWidget({Key? key}) : super(key: key);
@@ -14,13 +13,13 @@ class AppWidget extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => ListUserCubit(),
+            create: (context) =>
+                ListUserBloc()..add(const ListUserEvent.getListUser())),
+        BlocProvider(
+          create: (context) => CreateUserBloc(),
         ),
         BlocProvider(
-          create: (context) => CreateUserCubit(),
-        ),
-        BlocProvider(
-          create: (context) => SingleUserCubit(),
+          create: (context) => SingleUserBloc(),
         ),
       ],
       child: const MaterialApp(
@@ -31,4 +30,3 @@ class AppWidget extends StatelessWidget {
     );
   }
 }
-
